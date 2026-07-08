@@ -42,3 +42,14 @@ testem.log
 # System Files
 .DS_Store
 Thumbs.db
+
+# Other
+dist-ssr
+*.local
+.env
+.nitro
+.tanstack
+.wrangler
+.output
+.vinxi
+__unconfig*

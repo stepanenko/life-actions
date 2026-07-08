@@ -1,0 +1,119 @@
+
+// ─── Date helpers ─────────────────────────────────────────────────────────────
+// Use UTC here so SSR and the browser produce identical labels and streak keys.
+
+export function getLocalDateString(offsetDays = 0): string {
+  const d = new Date()
+  d.setUTCDate(d.getUTCDate() - offsetDays)
+  const yyyy = d.getUTCFullYear()
+  const mm = String(d.getUTCMonth() + 1).padStart(2, '0')
+  const dd = String(d.getUTCDate()).padStart(2, '0')
+  return `${yyyy}-${mm}-${dd}`
+}
+
+export function getDayName(offsetDays = 0): string {
+  const d = new Date()
+  d.setUTCDate(d.getUTCDate() - offsetDays)
+  return d.toLocaleDateString('en-US', {
+    weekday: 'short',
+    timeZone: 'UTC',
+  })
+}
+
+export function getDayNum(offsetDays = 0): string {
+  const d = new Date()
+  d.setUTCDate(d.getUTCDate() - offsetDays)
+  return String(d.getUTCDate())
+}
+
+// ─── Step size for duration habits ───────────────────────────────────────────
+// Gives ≈ 4-6 clicks to reach goal
+
+export function getDurationStep(goalMinutes: number): number {
+  if (goalMinutes <= 20) return 5
+  if (goalMinutes <= 60) return 10
+  return 15
+}
+
+export function getStep(habit: Habit): number {
+  return habit.type === 'duration' ? getDurationStep(habit.goal) : 1
+}
+
+// ─── Demo habits ──────────────────────────────────────────────────────────────
+
+export function getDemoHabits(): Habit[] {
+  const t = getLocalDateString(0)
+  const y = getLocalDateString(1)
+  const d2 = getLocalDateString(2)
+  const d3 = getLocalDateString(3)
+  const d4 = getLocalDateString(4)
+
+  return [
+    {
+      id: 'demo-1',
+      name: 'Hydrate 3L Water',
+      category: 'health',
+      color: 'emerald',
+      createdAt: d4,
+      type: 'count',
+      goal: 3,
+      completionData: { [t]: 3, [y]: 3, [d2]: 3, [d3]: 3 },
+    },
+    {
+      id: 'demo-2',
+      name: 'Mindfulness Meditation',
+      category: 'mind',
+      color: 'purple',
+      createdAt: d4,
+      type: 'duration',
+      goal: 20,
+      completionData: { [y]: 20, [d2]: 20, [d3]: 20, [t]: 10 },
+    },
+    {
+      id: 'demo-3',
+      name: 'Read Technical Articles',
+      category: 'learning',
+      color: 'blue',
+      createdAt: d4,
+      type: 'count',
+      goal: 3,
+      completionData: { [y]: 3, [d2]: 2, [d3]: 3, [t]: 1 },
+    },
+  ]
+}
+
+// ─── Streak calculation ───────────────────────────────────────────────────────
+
+export function calculateStreak(
+  completionData: Record<string, number>,
+  goal: number,
+): number {
+  if (!completionData || Object.keys(completionData).length === 0) return 0
+
+  const isCompleted = (date: string) => (completionData[date] ?? 0) >= goal
+
+  const todayStr = getLocalDateString(0)
+  const yesterdayStr = getLocalDateString(1)
+
+  if (!isCompleted(todayStr) && !isCompleted(yesterdayStr)) return 0
+
+  const checkDate = new Date()
+  if (!isCompleted(todayStr)) {
+    checkDate.setUTCDate(checkDate.getUTCDate() - 1)
+  }
+
+  let streakCount = 0
+  while (true) {
+    const yyyy = checkDate.getUTCFullYear()
+    const mm = String(checkDate.getUTCMonth() + 1).padStart(2, '0')
+    const dd = String(checkDate.getUTCDate()).padStart(2, '0')
+    const dateStr = `${yyyy}-${mm}-${dd}`
+    if (isCompleted(dateStr)) {
+      streakCount++
+      checkDate.setUTCDate(checkDate.getUTCDate() - 1)
+    } else {
+      break
+    }
+  }
+  return streakCount
+}
