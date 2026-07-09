@@ -1,5 +1,5 @@
 {
-  "name": "life-act",
+  "name": "life-actions",
   "private": true,
   "type": "module",
   "imports": {
@@ -9,7 +9,6 @@
     "dev": "vite dev --port 3000",
     "generate-routes": "tsr generate",
     "build": "vite build",
-    "deploy": "gh-pages -d dist",
     "preview": "vite preview",
     "test": "vitest run",
     "format": "biome format",
