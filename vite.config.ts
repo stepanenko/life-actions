@@ -9,7 +9,7 @@ import tailwindcss from '@tailwindcss/vite'
 const config = defineConfig({
   resolve: { tsconfigPaths: true },
   plugins: [devtools(), tailwindcss(), tanstackStart(), viteReact()],
-  base: '/REPOSITORY/', // Replace REPOSITORY with your GitHub repository name.
+  base: '/life-actions/', // Replace REPOSITORY with your GitHub repository name.
 })
 
 export default config
