@@ -1,4 +1,3 @@
-Welcome to your new TanStack Start app! 
 
 # Life Actions
 
@@ -11,7 +10,7 @@ npm install
 npm run dev
 ```
 
-# Building For Production
+## Building For Production
 
 To build this application for production:
 
@@ -178,7 +177,7 @@ function PeopleComponent() {
 
 Loaders simplify your data fetching logic dramatically. Check out more information in the [Loader documentation](https://tanstack.com/router/latest/docs/framework/react/guide/data-loading#loader-parameters).
 
-# Learn More
+## Learn More
 
 You can learn more about all of the offerings from TanStack in the [TanStack documentation](https://tanstack.com).
 
