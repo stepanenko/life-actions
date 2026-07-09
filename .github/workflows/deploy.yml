@@ -30,9 +30,12 @@ jobs:
 
       - run: npm run build
 
+      # Debug step
+      - run: ls -R dist
+
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: ./dist
+          path: ./dist/client
 
   deploy:
     needs: build
