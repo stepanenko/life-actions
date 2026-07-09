@@ -1,4 +1,4 @@
-name: Deploy React app
+name: Deploy Life Actions
 
 on:
   push:
