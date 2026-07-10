@@ -1,5 +1,7 @@
 import { AlertCircle, X } from "lucide-react"
+
 import { CATEGORIES, COLOR_PALETTES, HABIT_TYPE_CONFIG } from "#/pages/Activity/Activity.constants"
+import type { HabitType } from "#/pages/Activity/Activity.models"
 
 type EditHabitModalProps = {
   isOpen: boolean

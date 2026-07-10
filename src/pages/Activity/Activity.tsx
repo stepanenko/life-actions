@@ -1,23 +1,30 @@
 import { useEffect, useState } from "react"
+
 import { EditHabitModal } from "#/components/EditHabitModal"
 import { EmptyHabitsState } from "#/components/EmptyHabitsState"
 import { HabitCard } from "#/components/HabitCard"
 import { HabitHistoryCalendar } from "#/components/HabitHistoryCalendar"
 import { HeroHeader } from "#/components/HeroHeader"
 import { StatsRow } from "#/components/StatsRow"
+
 import { calculateStreak, getDayName, getDayNum, getDemoHabits, getLocalDateString, getStep } from "./Activity.helpers"
+import type { Category, CreateHabitInput, Habit, HabitType } from "./Activity.models"
+import { supabase } from "#/utils/supabase"
+import { useHabits } from "#/hooks/useHabits"
 
 export function ActivityPage() {
-  const [habits, setHabits] = useState<Habit[]>([])
-  const [newHabitName, setNewHabitName] = useState('')
-  const [newHabitCategory, setNewHabitCategory] = useState<Habit['category']>('health')
-  const [newHabitColor, setNewHabitColor] = useState('emerald')
-  const [newHabitType, setNewHabitType] = useState<HabitType>('count')
-  const [newHabitGoal, setNewHabitGoal] = useState(3)
+  const [oldHabits, setHabits] = useState<Habit[]>([])
+  const [habitName, setHabitName] = useState('')
+  const [habitCategory, setHabitCategory] = useState<Category>('health')
+  const [habitColor, setHabitColor] = useState('emerald')
+  const [habitType, setHabitType] = useState<HabitType>('count')
+  const [habitGoal, setHabitGoal] = useState(3)
   const [showAddForm, setShowAddForm] = useState(false)
   const [editingHabitId, setEditingHabitId] = useState<string | null>(null)
   const [selectedHistoryHabit, setSelectedHistoryHabit] = useState<Habit | null>(null)
   const [errorMessage, setErrorMessage] = useState('')
+
+  const { data: habits } = useHabits()
 
   // Load from localStorage
   useEffect(() => {
@@ -67,7 +74,7 @@ export function ActivityPage() {
     event: React.MouseEvent<HTMLButtonElement>,
   ) => {
     saveHabits(
-      habits.map((habit) => {
+      oldHabits.map((habit) => {
         if (habit.id !== habitId) return habit
         const next = updateProgress(habit, dateStr, event)
         const newData = { ...habit.completionData }
@@ -82,11 +89,11 @@ export function ActivityPage() {
   }
 
   const resetHabitForm = () => {
-    setNewHabitName('')
-    setNewHabitCategory('health')
-    setNewHabitColor('emerald')
-    setNewHabitType('count')
-    setNewHabitGoal(3)
+    setHabitName('')
+    setHabitCategory('health')
+    setHabitColor('emerald')
+    setHabitType('count')
+    setHabitGoal(3)
     setShowAddForm(false)
     setEditingHabitId(null)
     setErrorMessage('')
@@ -98,11 +105,11 @@ export function ActivityPage() {
   }
 
   const openEditHabitForm = (habit: Habit) => {
-    setNewHabitName(habit.name)
-    setNewHabitCategory(habit.category)
-    setNewHabitColor(habit.color)
-    setNewHabitType(habit.type)
-    setNewHabitGoal(habit.goal)
+    setHabitName(habit.name)
+    setHabitCategory(habit.category)
+    setHabitColor(habit.color)
+    setHabitType(habit.type)
+    setHabitGoal(habit.goal)
     setEditingHabitId(habit.id)
     setShowAddForm(true)
     setErrorMessage('')
@@ -110,50 +117,73 @@ export function ActivityPage() {
 
   const handleSaveHabit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!newHabitName.trim()) {
+    if (!habitName.trim()) {
       setErrorMessage('Habit name cannot be empty!')
       return
     }
-    if (newHabitGoal < 1) {
+    if (habitGoal < 1) {
       setErrorMessage('Goal must be at least 1.')
       return
     }
 
     if (editingHabitId) {
       saveHabits(
-        habits.map((habit) =>
+        oldHabits.map((habit) =>
           habit.id === editingHabitId
             ? {
                 ...habit,
-                name: newHabitName.trim(),
-                category: newHabitCategory,
-                color: newHabitColor,
-                type: newHabitType,
-                goal: newHabitGoal,
+                name: habitName.trim(),
+                category: habitCategory,
+                color: habitColor,
+                type: habitType,
+                goal: habitGoal,
               }
             : habit,
         ),
       )
     } else {
+      // save to localstorage
       const newHabit: Habit = {
         id: Date.now().toString(),
-        name: newHabitName.trim(),
-        category: newHabitCategory,
-        color: newHabitColor,
+        name: habitName.trim(),
+        category: habitCategory,
+        color: habitColor,
         createdAt: getLocalDateString(0),
-        type: newHabitType,
-        goal: newHabitGoal,
+        type: habitType,
+        goal: habitGoal,
         completionData: {},
       }
-      saveHabits([newHabit, ...habits])
+      saveHabits([newHabit, ...oldHabits])
+
+      // save to Supabase
+      const habit: CreateHabitInput = {
+        name: habitName.trim(),
+        category: habitCategory,
+        color: habitColor,
+        type: habitType,
+        goal: habitGoal,
+      }
+      createHabit(habit);
     }
 
     resetHabitForm()
   }
 
+  async function createHabit(habit: CreateHabitInput) {
+    const { error } = await supabase
+      .from('habits')
+      .insert(habit)
+
+    if (error) {
+      console.error("Error inserting habit:", error);
+    } else {
+      console.log("New habit inserted");
+    }
+  }
+
   const handleDeleteHabit = (id: string) => {
     if (window.confirm('Are you sure you want to delete this habit?')) {
-      saveHabits(habits.filter((h) => h.id !== id))
+      saveHabits(oldHabits.filter((h) => h.id !== id))
     }
   }
 
@@ -168,8 +198,8 @@ export function ActivityPage() {
   const todayStr = getLocalDateString(0)
 
   // Dashboard stats
-  const habitsCount = habits.length
-  const completedTodayCount = habits.filter(
+  const habitsCount = oldHabits.length
+  const completedTodayCount = oldHabits.filter(
     (h) => (h.completionData[todayStr] ?? 0) >= h.goal,
   ).length
   const todayProgressPercent =
@@ -179,10 +209,10 @@ export function ActivityPage() {
   const maxStreak =
     habitsCount > 0
       ? Math.max(
-          ...habits.map((h) => calculateStreak(h.completionData, h.goal)),
+          ...oldHabits.map((h) => calculateStreak(h.completionData, h.goal)),
         )
       : 0
-  const totalCompletionsAllTime = habits.reduce(
+  const totalCompletionsAllTime = oldHabits.reduce(
     (acc, h) =>
       acc +
       Object.values(h.completionData).filter((v) => v >= h.goal).length,
@@ -204,22 +234,22 @@ export function ActivityPage() {
       <EditHabitModal
         isOpen={showAddForm}
         title={editingHabitId ? 'Edit Habit' : 'Add a New Habit'}
-        name={newHabitName}
-        category={newHabitCategory}
-        color={newHabitColor}
-        type={newHabitType}
-        goal={newHabitGoal}
+        name={habitName}
+        category={habitCategory}
+        color={habitColor}
+        type={habitType}
+        goal={habitGoal}
         errorMessage={errorMessage}
         onClose={resetHabitForm}
         onSubmit={handleSaveHabit}
-        onNameChange={setNewHabitName}
-        onCategoryChange={(value) => setNewHabitCategory(value)}
-        onColorChange={setNewHabitColor}
+        onNameChange={setHabitName}
+        onCategoryChange={(value) => setHabitCategory(value)}
+        onColorChange={setHabitColor}
         onTypeChange={(value) => {
-          setNewHabitType(value)
-          setNewHabitGoal(value === 'duration' ? 20 : 3)
+          setHabitType(value)
+          setHabitGoal(value === 'duration' ? 20 : 3)
         }}
-        onGoalChange={setNewHabitGoal}
+        onGoalChange={setHabitGoal}
       />
 
       {selectedHistoryHabit && (
@@ -230,12 +260,14 @@ export function ActivityPage() {
         />
       )}
 
-      {/* ── Habits list ── */}
+      {/* ── Old habits list ── */}
       <section className="mt-8 space-y-4">
+        <h2>Old Habits</h2>
+
         {habitsCount === 0 ? (
           <EmptyHabitsState onAddHabit={openAddHabitForm} />
         ) : (
-          habits.map((habit) => {
+          oldHabits.map((habit) => {
             const streak = calculateStreak(habit.completionData, habit.goal)
             const totalCompletions = Object.values(habit.completionData).filter(
               (v) => v >= habit.goal,
@@ -251,6 +283,43 @@ export function ActivityPage() {
                 totalCompletions={totalCompletions}
                 todayProgress={todayProgress}
                 todayComplete={todayComplete}
+                dateTimeline={dateTimeline}
+                onEdit={openEditHabitForm}
+                onDelete={handleDeleteHabit}
+                onViewHistory={(habit) => setSelectedHistoryHabit(habit)}
+                onCycle={(habitId, dateStr, event) =>
+                  updateHabitProgress(habitId, dateStr, event)
+                }
+              />
+            )
+          })
+        )}
+      </section>
+
+      {/* ── New habits list ── */}
+      <section className="mt-8 space-y-4">
+        <h2>New Habits</h2>
+
+        {habitsCount === 0 ? (
+          <EmptyHabitsState onAddHabit={openAddHabitForm} />
+        ) : (
+          habits?.map((habit) => {
+            const streak = calculateStreak(habit.completionData, habit.goal)
+            // TODO: fix commented variables
+            // const totalCompletions = Object.values(habit.completionData).filter(
+            //   (v) => v >= habit.goal,
+            // ).length
+            // const todayProgress = habit.completionData[todayStr] ?? 0
+            // const todayComplete = todayProgress >= habit.goal
+
+            return (
+              <HabitCard
+                key={habit.id}
+                habit={habit}
+                streak={streak}
+                totalCompletions={1}
+                todayProgress={1}
+                todayComplete={true}
                 dateTimeline={dateTimeline}
                 onEdit={openEditHabitForm}
                 onDelete={handleDeleteHabit}

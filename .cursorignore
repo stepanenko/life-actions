@@ -1,0 +1,81 @@
+# Git
+.git/
+.git/**
+
+# Dependencies
+node_modules/
+vendor/
+
+# Build
+dist/
+build/
+coverage/
+out/
+.next/
+.nuxt/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Generated
+*.generated.*
+*.gen.*
+*.lock
+
+# Documentation
+README.md
+docs/
+CHANGELOG.md
+
+# CI/CD
+.github/
+.gitlab/
+.circleci/
+
+# Infrastructure
+terraform/
+*.tf
+*.tfvars
+docker-compose.yml
+Dockerfile
+k8s/
+helm/
+
+# Secrets
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# Large assets
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+*.pdf
+*.zip
+
+# Config
+package.json
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Tests
+coverage/
+playwright-report/

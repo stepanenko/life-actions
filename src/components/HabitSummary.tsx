@@ -1,5 +1,8 @@
 import { Flame, Hash, Sparkles } from "lucide-react"
+
 import { CATEGORIES, HABIT_TYPE_CONFIG } from "#/pages/Activity/Activity.constants"
+
+import type { Habit } from "#/pages/Activity/Activity.models"
 
 type HabitSummaryProps = {
   habit: Habit

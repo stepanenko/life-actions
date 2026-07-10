@@ -1,3 +1,4 @@
+import type { Habit } from "./Activity.models"
 
 // ─── Date helpers ─────────────────────────────────────────────────────────────
 // Use UTC here so SSR and the browser produce identical labels and streak keys.
@@ -61,8 +62,8 @@ export function getDemoHabits(): Habit[] {
     },
     {
       id: 'demo-2',
-      name: 'Mindfulness Meditation',
-      category: 'mind',
+      name: 'Learn Java',
+      category: 'work',
       color: 'purple',
       createdAt: d4,
       type: 'duration',

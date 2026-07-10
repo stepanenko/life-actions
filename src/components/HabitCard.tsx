@@ -1,6 +1,9 @@
 import { CalendarDays, Pencil, Trash2 } from "lucide-react"
+
 import { HabitSummary } from "#/components/HabitSummary"
 import { ProgressDrop } from "#/components/ProgressDrop"
+
+import type { Habit } from "#/pages/Activity/Activity.models"
 
 type HabitCardProps = {
   habit: Habit

@@ -1,12 +1,11 @@
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+export type HabitType = 'count' | 'duration'
+export type Category = 'health' | 'learning' | 'work' | 'house' | 'other'
 
-type HabitType = 'count' | 'duration'
-
-interface Habit {
+export interface Habit {
   id: string
   name: string
-  category: 'health' | 'mind' | 'learning' | 'productivity' | 'other'
+  category: Category
   color: string
   createdAt: string
   type: HabitType
@@ -14,4 +13,19 @@ interface Habit {
   goal: number
   /** date (YYYY-MM-DD) → current progress 0..goal */
   completionData: Record<string, number>
+}
+
+export interface HabitProgress {
+  id: string
+  habitId: string
+  day: string      // YYYY-MM-DD
+  progress: number
+}
+
+export interface CreateHabitInput {
+  name: string
+  category: Category
+  color: string
+  type: HabitType
+  goal: number
 }

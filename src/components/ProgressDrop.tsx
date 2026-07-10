@@ -1,5 +1,6 @@
 import { COLOR_PALETTES } from "#/pages/Activity/Activity.constants"
 import { getStep } from "#/pages/Activity/Activity.helpers"
+import type { Habit } from "#/pages/Activity/Activity.models"
 
 interface ProgressDropProps {
   habit: Habit
@@ -14,7 +15,7 @@ export function ProgressDrop({
   dayName,
   onCycle,
 }: ProgressDropProps) {
-  const current = habit.completionData[dateStr] ?? 0
+  const current = habit.completionData?.[dateStr] ?? 0
   const fillPercent = habit.goal > 0
     ? Math.min((current / habit.goal) * 100, 100)
     : 0

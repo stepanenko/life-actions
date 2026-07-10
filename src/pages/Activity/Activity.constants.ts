@@ -1,12 +1,5 @@
-import {
-  Heart,
-  Brain,
-  BookOpen,
-  Flame,
-  Sparkles,
-  Timer,
-  Hash,
-} from "lucide-react"
+import { Heart, BookOpen, Flame, Sparkles, Timer, Hash, House } from "lucide-react"
+import type { HabitType } from "./Activity.models";
 
 // ─── Category config ──────────────────────────────────────────────────────────
 
@@ -17,23 +10,23 @@ export const CATEGORIES = {
     defaultBg:
       "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
   },
-  mind: {
-    label: "Mind & Wellness",
-    icon: Brain,
-    defaultBg:
-      "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20",
-  },
   learning: {
     label: "Learning",
     icon: BookOpen,
     defaultBg:
-      "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20",
+    "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20",
   },
-  productivity: {
-    label: "Productivity",
+  work: {
+    label: "Work",
     icon: Flame,
     defaultBg:
-      "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20",
+    "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20",
+  },
+  house: {
+    label: "House",
+    icon: House,
+    defaultBg:
+      "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20",
   },
   other: {
     label: "Other",

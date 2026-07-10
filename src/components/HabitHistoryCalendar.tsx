@@ -1,5 +1,7 @@
-import { CalendarDays, ChevronLeft, ChevronRight, X } from "lucide-react"
 import { useMemo, useState } from "react"
+import { CalendarDays, ChevronLeft, ChevronRight, X } from "lucide-react"
+
+import type { Habit } from "#/pages/Activity/Activity.models"
 
 type HabitHistoryCalendarProps = {
   habit: Habit
