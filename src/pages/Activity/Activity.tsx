@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 
 import { EditHabitModal } from "#/components/EditHabitModal"
 import { EmptyHabitsState } from "#/components/EmptyHabitsState"
@@ -7,10 +7,10 @@ import { HabitHistoryCalendar } from "#/components/HabitHistoryCalendar"
 import { HeroHeader } from "#/components/HeroHeader"
 import { StatsRow } from "#/components/StatsRow"
 
-import { calculateStreak, getDayName, getDayNum, getDemoHabits, getLocalDateString, getStep } from "./Activity.helpers"
-import type { Category, CreateHabitInput, Habit, HabitType } from "./Activity.models"
+import { calculateStreak, getDayName, getDayNum, getDemoHabits, getHabitStats, getLocalDateString, getStep } from "./Activity.helpers"
+import type { Category, CreateHabitInput, Habit, HabitProgress, HabitType } from "./Activity.models"
 import { supabase } from "#/utils/supabase"
-import { useHabits } from "#/hooks/useHabits"
+import { useHabitProgress, useHabits } from "#/hooks/useHabits"
 
 export function ActivityPage() {
   const [oldHabits, setHabits] = useState<Habit[]>([])
@@ -25,6 +25,23 @@ export function ActivityPage() {
   const [errorMessage, setErrorMessage] = useState('')
 
   const { data: habits } = useHabits()
+  const { data: progress } = useHabitProgress()
+
+  const progressByHabit = useMemo(() => {
+    console.log("progress", progress);
+    
+    const map = new Map<string, HabitProgress[]>()
+
+    for (const p of progress ?? []) {
+      const list = map.get(p.habit_id) ?? []
+      list.push(p)
+      map.set(p.habit_id, list)
+    }
+
+    console.log("map", map);
+    
+    return map
+  }, [progress])
 
   // Load from localStorage
   useEffect(() => {
@@ -305,21 +322,19 @@ export function ActivityPage() {
         ) : (
           habits?.map((habit) => {
             const streak = calculateStreak(habit.completionData, habit.goal)
-            // TODO: fix commented variables
-            // const totalCompletions = Object.values(habit.completionData).filter(
-            //   (v) => v >= habit.goal,
-            // ).length
-            // const todayProgress = habit.completionData[todayStr] ?? 0
-            // const todayComplete = todayProgress >= habit.goal
+            const habitProgress = progressByHabit.get(habit.id) ?? []
+
+            const { todayProgress, todayComplete, totalCompletions } = 
+              getHabitStats(habit, habitProgress, todayStr)
 
             return (
               <HabitCard
                 key={habit.id}
                 habit={habit}
                 streak={streak}
-                totalCompletions={1}
-                todayProgress={1}
-                todayComplete={true}
+                totalCompletions={totalCompletions}
+                todayProgress={todayProgress}
+                todayComplete={todayComplete}
                 dateTimeline={dateTimeline}
                 onEdit={openEditHabitForm}
                 onDelete={handleDeleteHabit}

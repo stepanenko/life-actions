@@ -1,30 +1,35 @@
-import type { Habit } from "./Activity.models"
+import type { Habit, HabitProgress } from "./Activity.models"
 
 // ─── Date helpers ─────────────────────────────────────────────────────────────
 // Use UTC here so SSR and the browser produce identical labels and streak keys.
 
+function getKyivDate(offsetDays = 0): Date {
+  const d = new Date();
+  d.setDate(d.getDate() - offsetDays);
+  return d;
+}
+
 export function getLocalDateString(offsetDays = 0): string {
-  const d = new Date()
-  d.setUTCDate(d.getUTCDate() - offsetDays)
-  const yyyy = d.getUTCFullYear()
-  const mm = String(d.getUTCMonth() + 1).padStart(2, '0')
-  const dd = String(d.getUTCDate()).padStart(2, '0')
-  return `${yyyy}-${mm}-${dd}`
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Kyiv",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(getKyivDate(offsetDays));
 }
 
 export function getDayName(offsetDays = 0): string {
-  const d = new Date()
-  d.setUTCDate(d.getUTCDate() - offsetDays)
-  return d.toLocaleDateString('en-US', {
-    weekday: 'short',
-    timeZone: 'UTC',
-  })
+  return new Intl.DateTimeFormat("en-US", {
+    weekday: "short",
+    timeZone: "Europe/Kyiv",
+  }).format(getKyivDate(offsetDays));
 }
 
 export function getDayNum(offsetDays = 0): string {
-  const d = new Date()
-  d.setUTCDate(d.getUTCDate() - offsetDays)
-  return String(d.getUTCDate())
+  return new Intl.DateTimeFormat("en-US", {
+    day: "numeric",
+    timeZone: "Europe/Kyiv",
+  }).format(getKyivDate(offsetDays));
 }
 
 // ─── Step size for duration habits ───────────────────────────────────────────
@@ -117,4 +122,20 @@ export function calculateStreak(
     }
   }
   return streakCount
+}
+
+export function getHabitStats(
+  habit: Habit,
+  progress: HabitProgress[],
+  today: string,
+) {
+  const todayProgress = progress.find((p => p.day === today))?.progress ?? 0
+
+  return {
+    todayProgress,
+    todayComplete: todayProgress >= habit.goal,
+    totalCompletions: progress.filter(
+      (p) => p.progress >= habit.goal,
+    ).length,
+  }
 }

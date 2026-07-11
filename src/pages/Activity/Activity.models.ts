@@ -17,7 +17,7 @@ export interface Habit {
 
 export interface HabitProgress {
   id: string
-  habitId: string
+  habit_id: string
   day: string      // YYYY-MM-DD
   progress: number
 }
