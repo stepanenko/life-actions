@@ -1,20 +1,18 @@
+import type { MouseEvent } from "react"
+import type { Habit } from "#/pages/Activity/Activity.models"
 import { COLOR_PALETTES } from "#/pages/Activity/Activity.constants"
 import { getStep } from "#/pages/Activity/Activity.helpers"
-import type { Habit } from "#/pages/Activity/Activity.models"
+import { useLocalHabits } from "#/context/localHabitsContext"
 
 interface ProgressDropProps {
   habit: Habit
   dateStr: string
   dayName: string
-  onCycle: (event: React.MouseEvent<HTMLButtonElement>) => void
 }
 
-export function ProgressDrop({
-  habit,
-  dateStr,
-  dayName,
-  onCycle,
-}: ProgressDropProps) {
+export function ProgressDrop({ habit, dateStr, dayName }: ProgressDropProps) {
+  const { localHabits, saveLocalHabits } = useLocalHabits()
+
   const current = habit.completionData?.[dateStr] ?? 0
   const fillPercent = habit.goal > 0
     ? Math.min((current / habit.goal) * 100, 100)
@@ -58,10 +56,48 @@ export function ProgressDrop({
     '-',
   )
 
+  const saveHabits = (updated: Habit[]) => {
+    saveLocalHabits(updated)
+  }
+
+  const updateProgress = (
+    habit: Habit,
+    dateStr: string,
+    event: React.MouseEvent<HTMLButtonElement>,
+  ) => {
+    const current = habit.completionData[dateStr] ?? 0
+    // console.log("curr", current);
+    
+    if (event.metaKey) return 0
+    if (event.shiftKey) {
+      const nextGoal = Math.floor(current / habit.goal + 1) * habit.goal
+      return Math.max(habit.goal, nextGoal)
+    }
+
+    const step = getStep(habit)
+    return current >= habit.goal ? current + step : Math.min(current + step, habit.goal)
+  }
+
+  const updateHabitProgress = (event: MouseEvent<HTMLButtonElement>) => {
+    saveHabits(
+      localHabits.map((localHabit) => {
+        if (localHabit.id !== habit.id) return localHabit
+        const next = updateProgress(localHabit, dateStr, event)
+        const newData = { ...localHabit.completionData }
+        if (next === 0) {
+          delete newData[dateStr]
+        } else {
+          newData[dateStr] = next
+        }
+        return { ...localHabit, completionData: newData }
+      }),
+    )
+  }
+
   return (
     <button
       type="button"
-      onClick={onCycle}
+      onClick={(event) => updateHabitProgress(event)}
       title={title}
       aria-label={title}
       className={`cursor-pointer relative flex h-11 w-11 flex-shrink-0 items-center justify-center border-0 p-0 ${palette.ring} ${

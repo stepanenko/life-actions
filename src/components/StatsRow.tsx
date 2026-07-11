@@ -1,20 +1,38 @@
+
+import { useLocalHabits } from "#/context/localHabitsContext";
+import { calculateStreak, getLocalDateString } from "#/pages/Activity/Activity.helpers";
 import { Award, Calendar, Flame } from "lucide-react"
 
-type StatsRowProps = {
-  completedTodayCount: number
-  habitsCount: number
-  todayProgressPercent: number
-  maxStreak: number
-  totalCompletionsAllTime: number
-}
+export function StatsRow() {
+  const { localHabits } = useLocalHabits()
+  
+  const todayStr = getLocalDateString(0)
 
-export function StatsRow({
-  completedTodayCount,
-  habitsCount,
-  todayProgressPercent,
-  maxStreak,
-  totalCompletionsAllTime,
-}: StatsRowProps) {
+  const habitsCount = localHabits.length
+
+  const completedTodayCount = localHabits.filter(
+    (h) => (h.completionData[todayStr] ?? 0) >= h.goal,
+  ).length
+
+  const todayProgressPercent =
+    habitsCount > 0
+      ? Math.round((completedTodayCount / habitsCount) * 100)
+      : 0
+
+  const maxStreak =
+    habitsCount > 0
+      ? Math.max(
+          ...localHabits.map((h) => calculateStreak(h.completionData, h.goal)),
+        )
+      : 0
+
+  const totalCompletionsAllTime = localHabits.reduce(
+    (acc, h) =>
+      acc +
+      Object.values(h.completionData).filter((v) => v >= h.goal).length,
+    0,
+  )
+
   return (
     <section className="mt-6 grid gap-4 sm:grid-cols-3">
       <div className="island-shell flex items-center gap-4 rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5 backdrop-blur-md">

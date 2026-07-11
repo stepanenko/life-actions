@@ -5,7 +5,6 @@ import type { Habit } from "#/pages/Activity/Activity.models"
 
 type HabitHistoryCalendarProps = {
   habit: Habit
-  isOpen: boolean
   onClose: () => void
 }
 
@@ -36,7 +35,7 @@ function formatProgressLabel(habit: Habit, progressValue: number) {
   return `${progressValue}/${habit.goal}`
 }
 
-export function HabitHistoryCalendar({ habit, isOpen, onClose }: HabitHistoryCalendarProps) {
+export function HabitHistoryCalendar({ habit, onClose }: HabitHistoryCalendarProps) {
   const [viewDate, setViewDate] = useState(() => new Date())
   const [viewMode, setViewMode] = useState<ViewMode>("month")
 
@@ -144,8 +143,6 @@ export function HabitHistoryCalendar({ habit, isOpen, onClose }: HabitHistoryCal
 
     setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + direction, 1))
   }
-
-  if (!isOpen) return null
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[rgba(15,27,31,0.6)] px-4 py-6 backdrop-blur-sm">

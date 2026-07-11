@@ -1,7 +1,7 @@
 import { AlertCircle } from "lucide-react"
 
 type EmptyHabitsStateProps = {
-  onAddHabit: () => void
+  onAddHabit?: () => void
 }
 
 export function EmptyHabitsState({ onAddHabit }: EmptyHabitsStateProps) {
@@ -14,13 +14,13 @@ export function EmptyHabitsState({ onAddHabit }: EmptyHabitsStateProps) {
       <p className="mt-2 mb-6 max-w-sm text-sm text-[var(--sea-ink-soft)]">
         Start structuring your daily routine by adding your first habit!
       </p>
-      <button
+      {onAddHabit && <button
         type="button"
         onClick={onAddHabit}
         className="cursor-pointer rounded-full bg-[var(--sea-ink)] px-5 py-2.5 text-sm font-semibold text-white transition dark:bg-[var(--lagoon-deep)] dark:text-[var(--sand)]"
       >
         Get Started
-      </button>
+      </button>}
     </div>
   )
 }

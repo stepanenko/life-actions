@@ -124,11 +124,8 @@ export function calculateStreak(
   return streakCount
 }
 
-export function getHabitStats(
-  habit: Habit,
-  progress: HabitProgress[],
-  today: string,
-) {
+export function getHabitStats(habit: Habit, progress: HabitProgress[]) {
+  const today = getLocalDateString(0)
   const todayProgress = progress.find((p => p.day === today))?.progress ?? 0
 
   return {
