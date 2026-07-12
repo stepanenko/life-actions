@@ -2,7 +2,7 @@ import { useMemo, useState } from "react"
 import { HabitSummary } from "#/components/HabitSummary"
 import { ProgressBox } from "#/components/ProgressBox"
 import type { Habit, HabitProgress } from "#/pages/Activity/Activity.models"
-import { calculateStreak, getDayName, getDayNum, getHabitStats, getLocalDateString } from "#/pages/Activity/Activity.helpers"
+import { getDayName, getDayNum, getLocalDateString } from "#/pages/Activity/Activity.helpers"
 import { HabitHistoryCalendar } from "./HabitHistoryCalendar"
 import { HabitActions } from "./HabitActions"
 
@@ -34,20 +34,11 @@ export function HabitCard({ habit, progress }: HabitCardProps) {
     return map
   }, [progress])
 
-  const streak = calculateStreak(habit.completionData, habit.goal)
   const habitProgress = progressByHabit.get(habit.id) ?? []
-
-  const { todayProgress, todayComplete, totalCompletions } = getHabitStats(habit, habitProgress)
 
   return (
     <article className="flex flex-col justify-between gap-6 rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5 transition-all hover:border-[var(--lagoon-deep)]/30 hover:shadow-[0_12px_32px_rgba(30,90,72,0.04)] sm:flex-row sm:items-center">
-      <HabitSummary
-        habit={habit}
-        streak={streak}
-        totalCompletions={totalCompletions}
-        todayProgress={todayProgress}
-        todayComplete={todayComplete}
-      />
+      <HabitSummary habit={habit} habitProgress={habitProgress} />
 
       <div className="flex items-center gap-4 sm:self-center">
         <div className="flex items-center gap-2 sm:gap-3">

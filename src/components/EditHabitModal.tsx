@@ -27,10 +27,6 @@ export function EditHabitModal({ isOpen, habit, onClose }: EditHabitModalProps) 
 
   const title = habit ? 'Edit Habit' : 'Add a New Habit'
 
-  const saveHabits = (updated: Habit[]) => {
-    saveLocalHabits(updated)
-  }
-
   useEffect(() => {
     if (habit) {
       setHabitName(habit.name)
@@ -67,7 +63,7 @@ export function EditHabitModal({ isOpen, habit, onClose }: EditHabitModalProps) 
     }
 
     if (editingHabitId) {
-      saveHabits(localHabits.map((localHabit) => localHabit.id === editingHabitId
+      saveLocalHabits(localHabits.map((localHabit) => localHabit.id === editingHabitId
         ? {
             ...localHabit,
             name: habitName.trim(),
@@ -79,7 +75,7 @@ export function EditHabitModal({ isOpen, habit, onClose }: EditHabitModalProps) 
         : localHabit),
       )
     } else {
-      // save to localstorage
+      // save new habit to localstorage
       const newHabit: Habit = {
         id: Date.now().toString(),
         name: habitName.trim(),
@@ -90,9 +86,9 @@ export function EditHabitModal({ isOpen, habit, onClose }: EditHabitModalProps) 
         goal: habitGoal,
         completionData: {},
       }
-      saveHabits([newHabit, ...localHabits])
+      saveLocalHabits([newHabit, ...localHabits])
 
-      // save to Supabase
+      // save new habit to Supabase
       const habit: CreateHabitInput = {
         name: habitName.trim(),
         category: habitCategory,

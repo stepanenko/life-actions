@@ -12,9 +12,11 @@ interface ProgressDropProps {
 }
 
 export function ProgressBox({ habit, dateStr, dayName, habitProgress }: ProgressDropProps) {
-  const { localHabits, saveLocalHabits } = useLocalHabits()
+  const { localProgress, saveLocalProgress } = useLocalHabits()
 
-  const current = habitProgress.find(hp => hp.day === dateStr)?.progress ?? habit.completionData?.[dateStr] ?? 0
+  const current = habitProgress.find(hp => hp.day === dateStr && hp.habit_id === habit.id)?.progress
+    ?? localProgress.find(hp => hp.day === dateStr && hp.habit_id === habit.id)?.progress
+    ?? 0
 
   const fillPercent = habit.goal > 0
     ? Math.min((current / habit.goal) * 100, 100)
@@ -58,17 +60,7 @@ export function ProgressBox({ habit, dateStr, dayName, habitProgress }: Progress
     '-',
   )
 
-  const saveHabits = (updated: Habit[]) => {
-    saveLocalHabits(updated)
-  }
-
-  const updateProgress = (
-    habit: Habit,
-    dateStr: string,
-    event: React.MouseEvent<HTMLButtonElement>,
-  ) => {
-    const current = habit.completionData[dateStr] ?? 0
-    
+  const updateProgress = (current: number, event: React.MouseEvent<HTMLButtonElement>) => {
     if (event.metaKey) return 0
     if (event.shiftKey) {
       const nextGoal = Math.floor(current / habit.goal + 1) * habit.goal
@@ -80,17 +72,20 @@ export function ProgressBox({ habit, dateStr, dayName, habitProgress }: Progress
   }
 
   const updateHabitProgress = (event: MouseEvent<HTMLButtonElement>) => {
-    saveHabits(localHabits.map((localHabit) => {
-      if (localHabit.id !== habit.id) return localHabit
-      const next = updateProgress(localHabit, dateStr, event)
-      const newData = { ...localHabit.completionData }
-      if (next === 0) {
-        delete newData[dateStr]
-      } else {
-        newData[dateStr] = next
+    const dayProgress = localProgress.find(lp => lp.habit_id === habit.id && lp.day === dateStr)
+
+    if (dayProgress) {
+      dayProgress.progress = updateProgress(dayProgress.progress, event)
+      saveLocalProgress([...localProgress])
+    } else {
+      const newHabitProgress: HabitProgress = {
+        id: Date.now().toString(),
+        habit_id: habit.id,
+        day: dateStr,
+        progress: updateProgress(0, event)
       }
-      return { ...localHabit, completionData: newData }
-    }))
+      saveLocalProgress([...localProgress, newHabitProgress])
+    }
   }
 
   return (

@@ -90,10 +90,7 @@ export function getDemoHabits(): Habit[] {
 
 // ─── Streak calculation ───────────────────────────────────────────────────────
 
-export function calculateStreak(
-  completionData: Record<string, number>,
-  goal: number,
-): number {
+export function calculateStreak(completionData: Record<string, number>, goal: number): number {
   if (!completionData || Object.keys(completionData).length === 0) return 0
 
   const isCompleted = (date: string) => (completionData[date] ?? 0) >= goal

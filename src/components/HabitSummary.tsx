@@ -1,27 +1,21 @@
 import { Flame, Hash, Sparkles } from "lucide-react"
-
 import { CATEGORIES, HABIT_TYPE_CONFIG } from "#/pages/Activity/Activity.constants"
-
-import type { Habit } from "#/pages/Activity/Activity.models"
+import type { Habit, HabitProgress } from "#/pages/Activity/Activity.models"
+import { calculateStreak, getHabitStats } from "#/pages/Activity/Activity.helpers"
 
 type HabitSummaryProps = {
   habit: Habit
-  streak: number
-  totalCompletions: number
-  todayProgress: number
-  todayComplete: boolean
+  habitProgress: HabitProgress[]
 }
 
-export function HabitSummary({
-  habit,
-  streak,
-  totalCompletions,
-  todayProgress,
-  todayComplete,
-}: HabitSummaryProps) {
+export function HabitSummary({ habit, habitProgress }: HabitSummaryProps) {
   const CatIcon = CATEGORIES[habit.category]?.icon ?? Sparkles
   const catBadge = CATEGORIES[habit.category]?.defaultBg ?? ""
   const TypeIcon = HABIT_TYPE_CONFIG[habit.type]?.icon ?? Hash
+
+  const streak = calculateStreak(habit.completionData, habit.goal)
+
+  const { todayProgress, todayComplete, totalCompletions } = getHabitStats(habit, habitProgress)
 
   return (
     <div className="min-w-0 flex-1">
