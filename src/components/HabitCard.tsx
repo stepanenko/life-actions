@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react"
 import { HabitSummary } from "#/components/HabitSummary"
-import { ProgressDrop } from "#/components/ProgressDrop"
+import { ProgressBox } from "#/components/ProgressBox"
 import type { Habit, HabitProgress } from "#/pages/Activity/Activity.models"
 import { calculateStreak, getDayName, getDayNum, getHabitStats, getLocalDateString } from "#/pages/Activity/Activity.helpers"
 import { HabitHistoryCalendar } from "./HabitHistoryCalendar"
@@ -23,8 +23,6 @@ export function HabitCard({ habit, progress }: HabitCardProps) {
   }))
 
   const progressByHabit = useMemo(() => {
-    console.log("progress", progress);
-    
     const map = new Map<string, HabitProgress[]>()
 
     for (const p of progress ?? []) {
@@ -32,8 +30,6 @@ export function HabitCard({ habit, progress }: HabitCardProps) {
       list.push(p)
       map.set(p.habit_id, list)
     }
-
-    console.log("map", map);
     
     return map
   }, [progress])
@@ -71,7 +67,7 @@ export function HabitCard({ habit, progress }: HabitCardProps) {
                 {dayNum}
               </span>
 
-              <ProgressDrop habit={habit} dateStr={dateStr} dayName={dayName} />
+              <ProgressBox habit={habit} dateStr={dateStr} dayName={dayName} habitProgress={habitProgress} />
             </div>
           ))}
         </div>

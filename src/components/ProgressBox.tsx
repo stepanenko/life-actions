@@ -1,5 +1,5 @@
 import type { MouseEvent } from "react"
-import type { Habit } from "#/pages/Activity/Activity.models"
+import type { Habit, HabitProgress } from "#/pages/Activity/Activity.models"
 import { COLOR_PALETTES } from "#/pages/Activity/Activity.constants"
 import { getStep } from "#/pages/Activity/Activity.helpers"
 import { useLocalHabits } from "#/context/localHabitsContext"
@@ -8,12 +8,14 @@ interface ProgressDropProps {
   habit: Habit
   dateStr: string
   dayName: string
+  habitProgress: HabitProgress[]
 }
 
-export function ProgressDrop({ habit, dateStr, dayName }: ProgressDropProps) {
+export function ProgressBox({ habit, dateStr, dayName, habitProgress }: ProgressDropProps) {
   const { localHabits, saveLocalHabits } = useLocalHabits()
 
-  const current = habit.completionData?.[dateStr] ?? 0
+  const current = habitProgress.find(hp => hp.day === dateStr)?.progress ?? habit.completionData?.[dateStr] ?? 0
+
   const fillPercent = habit.goal > 0
     ? Math.min((current / habit.goal) * 100, 100)
     : 0
@@ -66,7 +68,6 @@ export function ProgressDrop({ habit, dateStr, dayName }: ProgressDropProps) {
     event: React.MouseEvent<HTMLButtonElement>,
   ) => {
     const current = habit.completionData[dateStr] ?? 0
-    // console.log("curr", current);
     
     if (event.metaKey) return 0
     if (event.shiftKey) {
@@ -79,19 +80,17 @@ export function ProgressDrop({ habit, dateStr, dayName }: ProgressDropProps) {
   }
 
   const updateHabitProgress = (event: MouseEvent<HTMLButtonElement>) => {
-    saveHabits(
-      localHabits.map((localHabit) => {
-        if (localHabit.id !== habit.id) return localHabit
-        const next = updateProgress(localHabit, dateStr, event)
-        const newData = { ...localHabit.completionData }
-        if (next === 0) {
-          delete newData[dateStr]
-        } else {
-          newData[dateStr] = next
-        }
-        return { ...localHabit, completionData: newData }
-      }),
-    )
+    saveHabits(localHabits.map((localHabit) => {
+      if (localHabit.id !== habit.id) return localHabit
+      const next = updateProgress(localHabit, dateStr, event)
+      const newData = { ...localHabit.completionData }
+      if (next === 0) {
+        delete newData[dateStr]
+      } else {
+        newData[dateStr] = next
+      }
+      return { ...localHabit, completionData: newData }
+    }))
   }
 
   return (
@@ -157,7 +156,7 @@ export function ProgressDrop({ habit, dateStr, dayName }: ProgressDropProps) {
             {completionMultiplier}x
           </span>
         ) : null}
-      {showProgressLabel ? (
+        {showProgressLabel ? (
           <span
             className={`absolute bottom-2 text-[9px] font-bold leading-none ${innerLabelClass}`}
           >

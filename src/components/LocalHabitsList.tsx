@@ -5,8 +5,6 @@ import { HabitCard } from "./HabitCard"
 export const LocalHabitsList = () => {
   const { localHabits } = useLocalHabits();
 
-  console.log("local habits", localHabits);
-
   return (
     <section className="mt-8 space-y-4">
       <h2>Local Habits</h2>

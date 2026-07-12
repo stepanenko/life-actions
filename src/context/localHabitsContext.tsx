@@ -1,13 +1,13 @@
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { getDemoHabits } from "#/pages/Activity/Activity.helpers";
 import type { Habit } from "#/pages/Activity/Activity.models";
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 
 type LocalHabitsContextType = {
   localHabits: Habit[]
   saveLocalHabits: (habits: Habit[]) => void
 };
 
-const LocalHabitsContext = createContext<LocalHabitsContextType | undefined>(undefined);
+const LocalHabitsContext = createContext<LocalHabitsContextType | undefined>(undefined)
 
 export const LocalHabitsProvider = ({ children }: { children: ReactNode }) => {
   const [localHabits, setLocalHabits] = useState<Habit[]>([])
@@ -33,9 +33,9 @@ export const LocalHabitsProvider = ({ children }: { children: ReactNode }) => {
   }, [])
 
   const saveLocalHabits = (habits: Habit[]) => {
-    localStorage.setItem("habits", JSON.stringify(habits));
-    setLocalHabits(habits);
-  };
+    localStorage.setItem("habits", JSON.stringify(habits))
+    setLocalHabits(habits)
+  }
 
   return (
     <LocalHabitsContext.Provider value={{ localHabits, saveLocalHabits }}>
@@ -45,7 +45,7 @@ export const LocalHabitsProvider = ({ children }: { children: ReactNode }) => {
 }
 
 export function useLocalHabits() {
-  const context = useContext(LocalHabitsContext);
+  const context = useContext(LocalHabitsContext)
 
   if (!context) {
     throw new Error(
@@ -53,5 +53,5 @@ export function useLocalHabits() {
     );
   }
 
-  return context;
+  return context
 }
