@@ -1,11 +1,11 @@
 import { useEffect, useState, type ChangeEvent, type SyntheticEvent } from "react"
 import { AlertCircle, X } from "lucide-react"
+
 import { CATEGORIES, COLOR_PALETTES, HABIT_TYPE_CONFIG } from "#/pages/Activity/Activity.constants"
 import type { Category, CreateHabitInput, Habit, HabitType } from "#/pages/Activity/Activity.models"
-
-import { supabase } from "#/utils/supabase"
 import { getLocalDateString } from "#/pages/Activity/Activity.helpers"
 import { useLocalHabits } from "#/context/localHabitsContext"
+import { useHabits } from "#/hooks/useHabits"
 
 type EditHabitModalProps = {
   isOpen: boolean
@@ -24,6 +24,7 @@ export function EditHabitModal({ isOpen, habit, onClose }: EditHabitModalProps) 
   const [errorMessage, setErrorMessage] = useState('')
 
   const { localHabits, saveLocalHabits } = useLocalHabits()
+  const { createHabit, editHabit } = useHabits()
 
   const title = habit ? 'Edit Habit' : 'Add a New Habit'
 
@@ -41,16 +42,6 @@ export function EditHabitModal({ isOpen, habit, onClose }: EditHabitModalProps) 
 
   if (!isOpen) return null
 
-  async function createHabit(habit: CreateHabitInput) {
-    const { error } = await supabase.from('habits').insert(habit)
-
-    if (error) {
-      console.error("Error inserting habit:", error);
-    } else {
-      console.log("New habit inserted");
-    }
-  }
-
   const handleSaveHabit = (e: SyntheticEvent) => {
     e.preventDefault()
     if (!habitName.trim()) {
@@ -63,6 +54,13 @@ export function EditHabitModal({ isOpen, habit, onClose }: EditHabitModalProps) 
     }
 
     if (editingHabitId) {
+      const editedHabit: CreateHabitInput = {
+        name: habitName.trim(),
+        category: habitCategory,
+        color: habitColor,
+        type: habitType,
+        goal: habitGoal,
+      }
       saveLocalHabits(localHabits.map((localHabit) => localHabit.id === editingHabitId
         ? {
             ...localHabit,
@@ -74,6 +72,8 @@ export function EditHabitModal({ isOpen, habit, onClose }: EditHabitModalProps) 
           }
         : localHabit),
       )
+      // updaate in DB
+      editHabit({ id: editingHabitId, ...editedHabit })
     } else {
       // save new habit to localstorage
       const newHabit: Habit = {

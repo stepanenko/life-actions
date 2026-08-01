@@ -2,7 +2,7 @@ import { useHabitProgress, useHabits } from "#/hooks/useHabits"
 import { HabitCard } from "./HabitCard"
 
 export const HabitsList = () => {
-  const { data: habits } = useHabits()
+  const { habits } = useHabits()
   const { data: progress } = useHabitProgress()
 
   return (

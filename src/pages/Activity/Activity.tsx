@@ -1,10 +1,10 @@
+import { useState } from "react"
+
 import { HeroHeader } from "#/components/HeroHeader"
 import { StatsRow } from "#/components/StatsRow"
-
 import { HabitsList } from "#/components/HabitsList"
 import { LocalHabitsList } from "#/components/LocalHabitsList"
 import { EditHabitModal } from "#/components/EditHabitModal"
-import { useState } from "react"
 
 export function ActivityPage() {
   const [showEditForm, setShowEditForm] = useState(false)

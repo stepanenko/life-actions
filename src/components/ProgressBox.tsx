@@ -152,9 +152,7 @@ export function ProgressBox({ habit, dateStr, dayName, habitProgress }: Progress
           </span>
         ) : null}
         {showProgressLabel ? (
-          <span
-            className={`absolute bottom-2 text-[9px] font-bold leading-none ${innerLabelClass}`}
-          >
+          <span className={`absolute bottom-2 text-[9px] font-bold leading-none ${innerLabelClass}`}>
             {progressLabel}
           </span>
         ) : null}
