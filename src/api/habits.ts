@@ -32,6 +32,7 @@ export async function addHabit(newHabit: CreateHabitInput) {
 
   if (error) {
     console.error("Error inserting habit:", error);
+    throw error
   } else {
     console.log("New habit inserted");
     return data
@@ -47,6 +48,7 @@ export async function updateHabit({ id, ...updates }: CreateHabitInput & { id: s
 
   if (error) {
     console.error("Error updating habit:", error);
+    throw error
   } else {
     console.log("Habit updated");
     return data

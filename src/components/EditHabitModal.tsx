@@ -42,6 +42,23 @@ export function EditHabitModal({ isOpen, habit, onClose }: EditHabitModalProps) 
 
   if (!isOpen) return null
 
+  const editInLocal = (editedHabit: CreateHabitInput) => {
+    saveLocalHabits(localHabits.map((localHabit) => localHabit.id === editingHabitId
+      ? { ...localHabit, ...editedHabit }
+      : localHabit),
+    )
+  }
+
+  const addToLocal = (newHabit: CreateHabitInput) => {
+    const newLocalHabit: Habit = {
+      ...newHabit,
+      id: Date.now().toString(),
+      createdAt: getLocalDateString(0),
+      completionData: {},
+    }
+    saveLocalHabits([newLocalHabit, ...localHabits])
+  }
+
   const handleSaveHabit = (e: SyntheticEvent) => {
     e.preventDefault()
     if (!habitName.trim()) {
@@ -61,44 +78,23 @@ export function EditHabitModal({ isOpen, habit, onClose }: EditHabitModalProps) 
         type: habitType,
         goal: habitGoal,
       }
-      saveLocalHabits(localHabits.map((localHabit) => localHabit.id === editingHabitId
-        ? {
-            ...localHabit,
-            name: habitName.trim(),
-            category: habitCategory,
-            color: habitColor,
-            type: habitType,
-            goal: habitGoal,
-          }
-        : localHabit),
-      )
-      // updaate in DB
+      // update in localstorage, TODO: remove
+      editInLocal(editedHabit)
+      // update in Supabase
       editHabit({ id: editingHabitId, ...editedHabit })
     } else {
-      // save new habit to localstorage
-      const newHabit: Habit = {
-        id: Date.now().toString(),
+      const newHabit: CreateHabitInput = {
         name: habitName.trim(),
         category: habitCategory,
         color: habitColor,
-        createdAt: getLocalDateString(0),
         type: habitType,
         goal: habitGoal,
-        completionData: {},
       }
-      saveLocalHabits([newHabit, ...localHabits])
-
+      // save new habit to localstorage, TODO: remove
+      addToLocal(newHabit)
       // save new habit to Supabase
-      const habit: CreateHabitInput = {
-        name: habitName.trim(),
-        category: habitCategory,
-        color: habitColor,
-        type: habitType,
-        goal: habitGoal,
-      }
-      createHabit(habit);
+      createHabit(newHabit)
     }
-
     onClose()
   }
 
