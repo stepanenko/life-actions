@@ -1,6 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 
-import { getHabitProgress, getHabits } from "#/api/habits";
+import { getHabits } from "#/api/habits";
+import { getHabitProgress } from "#/api/habitProgress";
 
 export const habitsQueryOptions = () =>
   queryOptions({

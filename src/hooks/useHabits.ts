@@ -1,8 +1,9 @@
 import { useMutation, useQuery } from "@tanstack/react-query"
 
-import { habitProgressQueryOptions, habitsQueryOptions } from "#/queries/habits"
-import { addHabit, updateHabit } from "#/api/habits"
 import { queryClient } from "#/router"
+import { addHabit, updateHabit } from "#/api/habits"
+import { addHabitProgress, updateHabitProgress } from "#/api/habitProgress"
+import { habitProgressQueryOptions, habitsQueryOptions } from "#/queries/habits"
 
 export const useHabits = () => {
   const { data: habits } = useQuery(habitsQueryOptions())
@@ -32,5 +33,33 @@ export const useHabits = () => {
 }
 
 export const useHabitProgress = () => {
-  return useQuery(habitProgressQueryOptions())
+  const { data: habitProgress } = useQuery(habitProgressQueryOptions())
+
+  const createHabitProgress = useMutation({
+    mutationFn: addHabitProgress,
+    onSuccess: (data) => {
+      console.log('mutation succeeded:', data)
+      queryClient.invalidateQueries({ queryKey: ['habitProgress'] })
+    },
+    onError: (err) => {
+      console.log('mutation failed:', err)
+    },
+  })
+
+  const editHabitProgress = useMutation({
+    mutationFn: updateHabitProgress,
+    onSuccess: (data) => {
+      console.log('mutation succeeded:', data)
+      queryClient.invalidateQueries({ queryKey: ['habitProgress'] })
+    },
+    onError: (err) => {
+      console.log('mutation failed:', err)
+    },
+  })
+
+  return {
+    habitProgress,
+    createHabitProgress: createHabitProgress.mutate,
+    editHabitProgress: editHabitProgress.mutate,
+  }
 }

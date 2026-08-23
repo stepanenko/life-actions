@@ -1,20 +1,23 @@
 import type { MouseEvent } from "react"
-import type { Habit, HabitProgress } from "#/pages/Activity/Activity.models"
+
+import type { CreateHabitProgress, Habit, HabitProgress } from "#/pages/Activity/Activity.models"
 import { COLOR_PALETTES } from "#/pages/Activity/Activity.constants"
 import { getStep } from "#/pages/Activity/Activity.helpers"
 import { useLocalHabits } from "#/context/localHabitsContext"
+import { useHabitProgress } from "#/hooks/useHabits"
 
 interface ProgressDropProps {
   habit: Habit
   dateStr: string
   dayName: string
-  habitProgress: HabitProgress[]
+  progress: HabitProgress[]
 }
 
-export function ProgressBox({ habit, dateStr, dayName, habitProgress }: ProgressDropProps) {
+export function ProgressBox({ habit, dateStr, dayName, progress }: ProgressDropProps) {
   const { localProgress, saveLocalProgress } = useLocalHabits()
+  const { habitProgress, createHabitProgress, editHabitProgress } = useHabitProgress()
 
-  const current = habitProgress.find(hp => hp.day === dateStr && hp.habit_id === habit.id)?.progress
+  const current = progress.find(hp => hp.day === dateStr && hp.habit_id === habit.id)?.progress
     ?? localProgress.find(hp => hp.day === dateStr && hp.habit_id === habit.id)?.progress
     ?? 0
 
@@ -73,7 +76,25 @@ export function ProgressBox({ habit, dateStr, dayName, habitProgress }: Progress
 
   const updateHabitProgress = (event: MouseEvent<HTMLButtonElement>) => {
     const dayProgress = localProgress.find(lp => lp.habit_id === habit.id && lp.day === dateStr)
+    const progress = habitProgress?.find(lp => lp.habit_id === habit.id && lp.day === dateStr)
 
+    // DB update
+    if (progress) {
+      const editedProgress = {
+        id: progress.id,
+        progress: updateProgress(progress.progress, event)
+      }
+      editHabitProgress(editedProgress)
+    } else {
+      const newProgress: CreateHabitProgress = {
+        habit_id: habit.id,
+        day: dateStr,
+        progress: updateProgress(0, event)
+      }
+      createHabitProgress(newProgress)
+    }
+
+    // local update
     if (dayProgress) {
       dayProgress.progress = updateProgress(dayProgress.progress, event)
       saveLocalProgress([...localProgress])

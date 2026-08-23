@@ -1,5 +1,5 @@
-import type { CreateHabitInput, Habit, HabitProgress } from "#/pages/Activity/Activity.models"
 import { supabase } from "#/utils/supabase"
+import type { CreateHabitInput, Habit } from "#/pages/Activity/Activity.models"
 
 export async function getHabits(): Promise<Habit[]> {
   const { data, error } = await supabase
@@ -10,18 +10,6 @@ export async function getHabits(): Promise<Habit[]> {
   if (error) throw error
 
   return data
-}
-
-export async function getHabitProgress(): Promise<HabitProgress[] | undefined> {
-  const { data, error } = await supabase
-    .from('habit_progress')
-    .select('*')
-
-  if (error) {
-    console.error("Error getting habit progress:", error);
-  } else {
-    return data
-  }
 }
 
 export async function addHabit(newHabit: CreateHabitInput) {

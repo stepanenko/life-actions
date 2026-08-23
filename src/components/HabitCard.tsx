@@ -58,7 +58,7 @@ export function HabitCard({ habit, progress }: HabitCardProps) {
                 {dayNum}
               </span>
 
-              <ProgressBox habit={habit} dateStr={dateStr} dayName={dayName} habitProgress={habitProgress} />
+              <ProgressBox habit={habit} dateStr={dateStr} dayName={dayName} progress={habitProgress} />
             </div>
           ))}
         </div>

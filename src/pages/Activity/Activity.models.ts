@@ -22,6 +22,12 @@ export interface HabitProgress {
   progress: number
 }
 
+export interface CreateHabitProgress {
+  habit_id: string
+  day: string      // YYYY-MM-DD
+  progress: number
+}
+
 export interface CreateHabitInput {
   name: string
   category: Category
