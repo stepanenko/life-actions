@@ -1,10 +1,10 @@
+import { useState } from "react";
+import { CalendarDays, Pencil, Trash2 } from "lucide-react"
 
 import type { Habit } from "#/pages/Activity/Activity.models"
-import { CalendarDays, Pencil, Trash2 } from "lucide-react"
 import { EditHabitModal } from "./EditHabitModal";
-import { useState } from "react";
 import { HabitHistoryCalendar } from "./HabitHistoryCalendar";
-import { useLocalHabits } from "#/context/localHabitsContext";
+import { useDeleteHabit } from "#/hooks/useHabits";
 
 interface HabitActionsProps {
   habit: Habit;
@@ -14,15 +14,11 @@ export const HabitActions = ({ habit }: HabitActionsProps) => {
   const [showEditForm, setShowEditForm] = useState(false)
   const [habitHistory, setHabitHistory] = useState<Habit | null>(null)
 
-  const { localHabits, saveLocalHabits } = useLocalHabits()
-
-  const saveHabits = (updated: Habit[]) => {
-    saveLocalHabits(updated)
-  }
+  const deleteHabit = useDeleteHabit()
 
   const handleDeleteHabit = (id: string) => {
     if (window.confirm('Are you sure you want to delete this habit?')) {
-      saveHabits(localHabits.filter((h) => h.id !== id))
+      deleteHabit(id)
     }
   }
 

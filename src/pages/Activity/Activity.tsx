@@ -3,7 +3,6 @@ import { useState } from "react"
 import { HeroHeader } from "#/components/HeroHeader"
 import { StatsRow } from "#/components/StatsRow"
 import { HabitsList } from "#/components/HabitsList"
-import { LocalHabitsList } from "#/components/LocalHabitsList"
 import { EditHabitModal } from "#/components/EditHabitModal"
 
 export function ActivityPage() {
@@ -14,9 +13,6 @@ export function ActivityPage() {
       <HeroHeader onAddHabit={() => setShowEditForm(true)} />
 
       <StatsRow />
-
-      {/* ── Old habits list ── */}
-      <LocalHabitsList />
 
       {/* ── New habits list ── */}
       <HabitsList />

@@ -1,35 +1,35 @@
 
-import { useLocalHabits } from "#/context/localHabitsContext";
-import { calculateStreak, getLocalDateString } from "#/pages/Activity/Activity.helpers";
 import { Award, Calendar, Flame } from "lucide-react"
 
+import { useHabitProgress, useHabits } from "#/hooks/useHabits";
+import { calculateStreak, getLocalDateString, totalCompletionsAllTime } from "#/pages/Activity/Activity.helpers";
+
 export function StatsRow() {
-  const { localHabits } = useLocalHabits()
+  const { habits } = useHabits()
+  const { habitProgress } = useHabitProgress()
   
   const todayStr = getLocalDateString(0)
+  const habitsCount = habits.length
 
-  const habitsCount = localHabits.length
-
-  const completedTodayCount = localHabits.filter(
-    (h) => (h.completionData[todayStr] ?? 0) >= h.goal,
-  ).length
+  const completedTodayCount = habits.filter((habit) => {
+    const progress = habitProgress?.find(hp => hp.habit_id === habit.id && hp.day === todayStr)?.progress
+    return (progress ?? 0) >= habit.goal
+  }).length
 
   const todayProgressPercent =
     habitsCount > 0
       ? Math.round((completedTodayCount / habitsCount) * 100)
       : 0
 
-  const maxStreak =
-    habitsCount > 0
-      ? Math.max(
-          ...localHabits.map((h) => calculateStreak(h.completionData, h.goal)),
-        )
-      : 0
+  const maxStreak = habitsCount > 0
+    ? Math.max(...habits.map((h) => {
+      // const progress = habitProgress?.find(hp => hp.habit_id === h.id)?.progress
+      return calculateStreak(habitProgress, h.id, h.goal)
+    }))
+    : 0
 
-  const totalCompletionsAllTime = localHabits.reduce(
-    (acc, h) =>
-      acc +
-      Object.values(h.completionData).filter((v) => v >= h.goal).length,
+  const totalCompletions = habits.reduce(
+    (acc, h) => acc + totalCompletionsAllTime(habitProgress, h.id, h.goal),
     0,
   )
 
@@ -75,7 +75,7 @@ export function StatsRow() {
             Total Completions
           </p>
           <h3 className="mt-1 m-0 text-xl font-bold text-[var(--sea-ink)]">
-            {totalCompletionsAllTime}{" "}
+            {totalCompletions}{" "}
             <span className="text-sm font-medium text-[var(--sea-ink-soft)]">
               days
             </span>

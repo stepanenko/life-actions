@@ -3,8 +3,6 @@ import { AlertCircle, X } from "lucide-react"
 
 import { CATEGORIES, COLOR_PALETTES, HABIT_TYPE_CONFIG } from "#/pages/Activity/Activity.constants"
 import type { Category, CreateHabitInput, Habit, HabitType } from "#/pages/Activity/Activity.models"
-import { getLocalDateString } from "#/pages/Activity/Activity.helpers"
-import { useLocalHabits } from "#/context/localHabitsContext"
 import { useHabits } from "#/hooks/useHabits"
 
 type EditHabitModalProps = {
@@ -23,7 +21,6 @@ export function EditHabitModal({ isOpen, habit, onClose }: EditHabitModalProps) 
   const [editingHabitId, setEditingHabitId] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState('')
 
-  const { localHabits, saveLocalHabits } = useLocalHabits()
   const { createHabit, editHabit } = useHabits()
 
   const title = habit ? 'Edit Habit' : 'Add a New Habit'
@@ -41,23 +38,6 @@ export function EditHabitModal({ isOpen, habit, onClose }: EditHabitModalProps) 
   }, [])
 
   if (!isOpen) return null
-
-  const editInLocal = (editedHabit: CreateHabitInput) => {
-    saveLocalHabits(localHabits.map((localHabit) => localHabit.id === editingHabitId
-      ? { ...localHabit, ...editedHabit }
-      : localHabit),
-    )
-  }
-
-  const addToLocal = (newHabit: CreateHabitInput) => {
-    const newLocalHabit: Habit = {
-      ...newHabit,
-      id: Date.now().toString(),
-      createdAt: getLocalDateString(0),
-      completionData: {},
-    }
-    saveLocalHabits([newLocalHabit, ...localHabits])
-  }
 
   const handleSaveHabit = (e: SyntheticEvent) => {
     e.preventDefault()
@@ -78,9 +58,6 @@ export function EditHabitModal({ isOpen, habit, onClose }: EditHabitModalProps) 
         type: habitType,
         goal: habitGoal,
       }
-      // update in localstorage, TODO: remove
-      editInLocal(editedHabit)
-      // update in Supabase
       editHabit({ id: editingHabitId, ...editedHabit })
     } else {
       const newHabit: CreateHabitInput = {
@@ -90,9 +67,6 @@ export function EditHabitModal({ isOpen, habit, onClose }: EditHabitModalProps) 
         type: habitType,
         goal: habitGoal,
       }
-      // save new habit to localstorage, TODO: remove
-      addToLocal(newHabit)
-      // save new habit to Supabase
       createHabit(newHabit)
     }
     onClose()

@@ -2,6 +2,7 @@ import { useMemo, useState } from "react"
 import { CalendarDays, ChevronLeft, ChevronRight, X } from "lucide-react"
 
 import type { Habit } from "#/pages/Activity/Activity.models"
+import { useHabitProgress } from "#/hooks/useHabits"
 
 type HabitHistoryCalendarProps = {
   habit: Habit
@@ -38,6 +39,17 @@ function formatProgressLabel(habit: Habit, progressValue: number) {
 export function HabitHistoryCalendar({ habit, onClose }: HabitHistoryCalendarProps) {
   const [viewDate, setViewDate] = useState(() => new Date())
   const [viewMode, setViewMode] = useState<ViewMode>("month")
+  const { habitProgress } = useHabitProgress()
+
+  const habitProgressByDay = useMemo(() => {
+  const map = new Map<string, number>()
+    for (const entry of habitProgress) {
+      if (entry.habit_id !== habit.id) continue
+      const existing = map.get(entry.day) ?? 0
+      map.set(entry.day, Math.max(existing, entry.progress))
+    }
+    return map
+  }, [habitProgress, habit.id])
 
   const monthDays = useMemo(() => {
     const firstDayOfMonth = new Date(viewDate.getFullYear(), viewDate.getMonth(), 1)
@@ -50,7 +62,7 @@ export function HabitHistoryCalendar({ habit, onClose }: HabitHistoryCalendarPro
     for (let index = 0; index < startDay; index += 1) {
       const date = new Date(firstDayOfMonth)
       date.setDate(firstDayOfMonth.getDate() - (startDay - index))
-      const progressValue = habit.completionData[formatDateKey(date)] ?? 0
+      const progressValue = habitProgressByDay.get(formatDateKey(date)) ?? 0
       const isCompleted = progressValue >= habit.goal
       days.push({
         date,
@@ -63,7 +75,7 @@ export function HabitHistoryCalendar({ habit, onClose }: HabitHistoryCalendarPro
 
     for (let day = 1; day <= totalDays; day += 1) {
       const date = new Date(viewDate.getFullYear(), viewDate.getMonth(), day)
-      const progressValue = habit.completionData[formatDateKey(date)] ?? 0
+      const progressValue = habitProgressByDay.get(formatDateKey(date)) ?? 0
       const isCompleted = progressValue >= habit.goal
       days.push({
         date,
@@ -78,7 +90,7 @@ export function HabitHistoryCalendar({ habit, onClose }: HabitHistoryCalendarPro
     for (let index = 1; index <= remainingCells; index += 1) {
       const date = new Date(lastDayOfMonth)
       date.setDate(lastDayOfMonth.getDate() + index)
-      const progressValue = habit.completionData[formatDateKey(date)] ?? 0
+      const progressValue = habitProgressByDay.get(formatDateKey(date)) ?? 0
       const isCompleted = progressValue >= habit.goal
       days.push({
         date,
@@ -90,7 +102,7 @@ export function HabitHistoryCalendar({ habit, onClose }: HabitHistoryCalendarPro
     }
 
     return days
-  }, [habit.completionData, habit.goal, viewDate])
+  }, [habitProgressByDay, habit, viewDate])
 
   const yearMonths = useMemo(() => {
     const year = viewDate.getFullYear()
@@ -109,7 +121,7 @@ export function HabitHistoryCalendar({ habit, onClose }: HabitHistoryCalendarPro
 
       for (let day = 1; day <= totalDays; day += 1) {
         const date = new Date(year, monthIndex, day)
-        const progressValue = habit.completionData[formatDateKey(date)] ?? 0
+        const progressValue = habitProgressByDay.get(formatDateKey(date)) ?? 0
         const isCompleted = progressValue >= habit.goal
         if (isCompleted) {
           completedCount += 1
@@ -131,7 +143,7 @@ export function HabitHistoryCalendar({ habit, onClose }: HabitHistoryCalendarPro
         daySquares,
       }
     })
-  }, [habit.completionData, habit.goal, viewDate])
+  }, [habitProgressByDay, habit, viewDate])
 
   const completedCount = monthDays.filter((day) => day.inCurrentMonth && day.isCompleted).length
 

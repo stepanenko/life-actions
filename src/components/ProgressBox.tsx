@@ -3,7 +3,6 @@ import type { MouseEvent } from "react"
 import type { CreateHabitProgress, Habit, HabitProgress } from "#/pages/Activity/Activity.models"
 import { COLOR_PALETTES } from "#/pages/Activity/Activity.constants"
 import { getStep } from "#/pages/Activity/Activity.helpers"
-import { useLocalHabits } from "#/context/localHabitsContext"
 import { useHabitProgress } from "#/hooks/useHabits"
 
 interface ProgressDropProps {
@@ -14,24 +13,21 @@ interface ProgressDropProps {
 }
 
 export function ProgressBox({ habit, dateStr, dayName, progress }: ProgressDropProps) {
-  const { localProgress, saveLocalProgress } = useLocalHabits()
   const { habitProgress, createHabitProgress, editHabitProgress } = useHabitProgress()
 
-  const current = progress.find(hp => hp.day === dateStr && hp.habit_id === habit.id)?.progress
-    ?? localProgress.find(hp => hp.day === dateStr && hp.habit_id === habit.id)?.progress
-    ?? 0
+  const current = progress.find(hp => hp.day === dateStr && hp.habit_id === habit.id)?.progress ?? 0
 
-  const fillPercent = habit.goal > 0
-    ? Math.min((current / habit.goal) * 100, 100)
-    : 0
+  const fillPercent = habit.goal > 0 ? Math.min((current / habit.goal) * 100, 100) : 0
   const overflowPercent = habit.goal > 0
     ? Math.max(Math.min(((current % habit.goal) / habit.goal) * 100, 100), 0)
     : 0
+
   const overflowVisible = overflowPercent > 0 && overflowPercent < 100
   const isComplete = current >= habit.goal
   const mainFillHeight = isComplete
     ? 44
     : current > 0 ? Math.max(1, (44 * fillPercent) / 100) : 0
+
   const overflowHeight = overflowVisible ? Math.max(1, (44 * overflowPercent) / 100) : 0
   const mainFillOpacity = current > 0 || isComplete ? 1 : 0
   const overflowOpacity = overflowVisible ? 1 : 0
@@ -40,6 +36,7 @@ export function ProgressBox({ habit, dateStr, dayName, progress }: ProgressDropP
   const overflowFill = isComplete
     ? 'color-mix(in srgb, white 20%, ' + baseFill + ')'
     : baseFill
+
   const step = getStep(habit)
   const completionMultiplier = habit.goal > 0
     ? Math.max(1, Math.floor(current / habit.goal))
@@ -75,10 +72,8 @@ export function ProgressBox({ habit, dateStr, dayName, progress }: ProgressDropP
   }
 
   const updateHabitProgress = (event: MouseEvent<HTMLButtonElement>) => {
-    const dayProgress = localProgress.find(lp => lp.habit_id === habit.id && lp.day === dateStr)
     const progress = habitProgress?.find(lp => lp.habit_id === habit.id && lp.day === dateStr)
 
-    // DB update
     if (progress) {
       const editedProgress = {
         id: progress.id,
@@ -92,20 +87,6 @@ export function ProgressBox({ habit, dateStr, dayName, progress }: ProgressDropP
         progress: updateProgress(0, event)
       }
       createHabitProgress(newProgress)
-    }
-
-    // local update
-    if (dayProgress) {
-      dayProgress.progress = updateProgress(dayProgress.progress, event)
-      saveLocalProgress([...localProgress])
-    } else {
-      const newHabitProgress: HabitProgress = {
-        id: Date.now().toString(),
-        habit_id: habit.id,
-        day: dateStr,
-        progress: updateProgress(0, event)
-      }
-      saveLocalProgress([...localProgress, newHabitProgress])
     }
   }
 

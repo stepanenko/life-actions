@@ -1,9 +1,10 @@
-import { useMutation, useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
 import { queryClient } from "#/router"
-import { addHabit, updateHabit } from "#/api/habits"
+import { addHabit, deleteHabit, updateHabit } from "#/api/habits"
 import { addHabitProgress, updateHabitProgress } from "#/api/habitProgress"
 import { habitProgressQueryOptions, habitsQueryOptions } from "#/queries/habits"
+import type { Habit, HabitProgress } from "#/pages/Activity/Activity.models"
 
 export const useHabits = () => {
   const { data: habits } = useQuery(habitsQueryOptions())
@@ -29,7 +30,43 @@ export const useHabits = () => {
     },
   })
 
-  return { habits, createHabit: createHabit.mutate, editHabit: editHabit.mutate }
+  return { habits: habits ?? [], createHabit: createHabit.mutate, editHabit: editHabit.mutate }
+}
+
+export function useDeleteHabit() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: deleteHabit,
+    onMutate: async (habitId: string) => {
+      await queryClient.cancelQueries({ queryKey: ['habits'] })
+      await queryClient.cancelQueries({ queryKey: ['habitProgress'] })
+
+      const previousHabits = queryClient.getQueryData<Habit[]>(['habits'])
+      const previousProgress = queryClient.getQueryData<HabitProgress[]>(['habitProgress'])
+
+      queryClient.setQueryData<Habit[]>(['habits'], (old) =>
+        old?.filter((h) => h.id !== habitId) ?? []
+      )
+      queryClient.setQueryData<HabitProgress[]>(['habitProgress'], (old) =>
+        old?.filter((p) => p.habit_id !== habitId) ?? []
+      )
+
+      return { previousHabits, previousProgress }
+    },
+    onError: (_err, _habitId, context) => {
+      if (context?.previousHabits) {
+        queryClient.setQueryData(['habits'], context.previousHabits)
+      }
+      if (context?.previousProgress) {
+        queryClient.setQueryData(['habitProgress'], context.previousProgress)
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['habits'] })
+      queryClient.invalidateQueries({ queryKey: ['habitProgress'] })
+    },
+  }).mutate
 }
 
 export const useHabitProgress = () => {
@@ -58,7 +95,7 @@ export const useHabitProgress = () => {
   })
 
   return {
-    habitProgress,
+    habitProgress: habitProgress ?? [],
     createHabitProgress: createHabitProgress.mutate,
     editHabitProgress: editHabitProgress.mutate,
   }

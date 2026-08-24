@@ -45,55 +45,23 @@ export function getStep(habit: Habit): number {
   return habit.type === 'duration' ? getDurationStep(habit.goal) : 1
 }
 
-// ─── Demo habits ──────────────────────────────────────────────────────────────
-
-export function getDemoHabits(): Habit[] {
-  const t = getLocalDateString(0)
-  const y = getLocalDateString(1)
-  const d2 = getLocalDateString(2)
-  const d3 = getLocalDateString(3)
-  const d4 = getLocalDateString(4)
-
-  return [
-    {
-      id: 'demo-1',
-      name: 'Hydrate 3L Water',
-      category: 'health',
-      color: 'emerald',
-      createdAt: d4,
-      type: 'count',
-      goal: 3,
-      completionData: { [t]: 3, [y]: 3, [d2]: 3, [d3]: 3 },
-    },
-    {
-      id: 'demo-2',
-      name: 'Learn Java',
-      category: 'work',
-      color: 'purple',
-      createdAt: d4,
-      type: 'duration',
-      goal: 20,
-      completionData: { [y]: 20, [d2]: 20, [d3]: 20, [t]: 10 },
-    },
-    {
-      id: 'demo-3',
-      name: 'Read Technical Articles',
-      category: 'learning',
-      color: 'blue',
-      createdAt: d4,
-      type: 'count',
-      goal: 3,
-      completionData: { [y]: 3, [d2]: 2, [d3]: 3, [t]: 1 },
-    },
-  ]
-}
-
 // ─── Streak calculation ───────────────────────────────────────────────────────
 
-export function calculateStreak(completionData: Record<string, number>, goal: number): number {
-  if (!completionData || Object.keys(completionData).length === 0) return 0
+export function calculateStreak(
+  habitProgress: HabitProgress[],
+  habitId: string,
+  goal: number
+): number {
+  if (!habitProgress || habitProgress.length === 0) return 0
 
-  const isCompleted = (date: string) => (completionData[date] ?? 0) >= goal
+  const progressByDay = new Map<string, number>()
+  for (const entry of habitProgress) {
+    if (entry.habit_id !== habitId) continue
+    const existing = progressByDay.get(entry.day) ?? 0
+    progressByDay.set(entry.day, Math.max(existing, entry.progress))
+  }
+
+  const isCompleted = (date: string) => (progressByDay.get(date) ?? 0) >= goal
 
   const todayStr = getLocalDateString(0)
   const yesterdayStr = getLocalDateString(1)
@@ -119,6 +87,28 @@ export function calculateStreak(completionData: Record<string, number>, goal: nu
     }
   }
   return streakCount
+}
+
+export function totalCompletionsAllTime(
+  habitProgress: HabitProgress[],
+  habitId: string,
+  goal: number
+): number {
+  if (!habitProgress || habitProgress.length === 0) return 0
+
+  const progressByDay = new Map<string, number>()
+  for (const entry of habitProgress) {
+    if (entry.habit_id !== habitId) continue
+    // if there are duplicate entries for a day, keep the highest progress
+    const existing = progressByDay.get(entry.day) ?? 0
+    progressByDay.set(entry.day, Math.max(existing, entry.progress))
+  }
+
+  let total = 0
+  for (const progress of progressByDay.values()) {
+    if (progress >= goal) total++
+  }
+  return total
 }
 
 export function getHabitStats(habit: Habit, progress: HabitProgress[]) {

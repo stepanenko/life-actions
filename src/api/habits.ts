@@ -42,3 +42,20 @@ export async function updateHabit({ id, ...updates }: CreateHabitInput & { id: s
     return data
   }
 }
+
+export async function deleteHabit(habitId: string): Promise<void> {
+  // Skip this call if habit_progress.habit_id has ON DELETE CASCADE set up
+  const { error: progressError } = await supabase
+    .from('habit_progress')
+    .delete()
+    .eq('habit_id', habitId)
+
+  if (progressError) throw progressError
+
+  const { error: habitError } = await supabase
+    .from('habits')
+    .delete()
+    .eq('id', habitId)
+
+  if (habitError) throw habitError
+}

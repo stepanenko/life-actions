@@ -11,8 +11,6 @@ export interface Habit {
   type: HabitType
   /** count=N times | duration=N minutes */
   goal: number
-  /** date (YYYY-MM-DD) → current progress 0..goal */
-  completionData: Record<string, number>
 }
 
 export interface HabitProgress {
